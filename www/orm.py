@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+__author__ = 'xiao'
 
 import logging
 
@@ -119,12 +120,14 @@ class ModelMetaclass(type):
                 if v.primary_key:
                     # 找到主键:
                     if primaryKey:
-                        raise StandardError('Duplicate primary key for field: %s' % k)
+                        # raise StandardError('Duplicate primary key for field: %s' % k)
+                        logging.error('Duplicate primary key for field. %s ' % k)
                     primaryKey = k
                 else:
                     fields.append(k)
         if not primaryKey:
-            raise StandardError('Primary key not found.')
+            # raise StandardError('Primary key not found.')
+            logging.error('Primary key not found')
         for k in mappings.keys():
             attrs.pop(k)
         escaped_fields = list(map(lambda f: '`%s`' % f, fields))
