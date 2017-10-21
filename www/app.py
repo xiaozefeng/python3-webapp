@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = 'jack'
+__author__ = 'steven'
 
 '''
 async web application
-
 '''
 
-import logging;
-
-logging.basicConfig(level=logging.INFO)
+import logging;logging.basicConfig(level=logging.INFO)
 
 import asyncio, os, json, time
 from datetime import datetime
@@ -22,9 +19,8 @@ import orm
 from coroweb import add_routes, add_static
 from handlers import cookie2user, COOKIE_NAME
 
-
 def init_jinja2(app, **kw):
-    logging.info('init jinja2...')
+    logging.info('init jinja2 ...')
     options = dict(
         autoescape=kw.get('autoescape', True),
         block_start_string=kw.get('block_start_string', '{%'),
@@ -55,14 +51,13 @@ async def logger_factory(app, handler):
 async def data_factory(app, handler):
     async def parse_data(request):
         if request.method == 'POST':
-            if request.content_type.startwith('application/json'):
+            if request.content_type.startswith('application/json'):
                 request.__data__ = await request.json()
                 logging.info('request json: %s' % str(request.__data__))
-            elif request.content_type.startwith('application/x-www-form-urlencoded'):
+            elif request.content_type.startswith('application/x-www-form-urlencoded'):
                 request.__data__ = await request.post()
                 logging.info('requst form: %s' % str(request.__data__))
         return (await handler(request))
-
     return parse_data
 
 
@@ -93,7 +88,7 @@ async def response_factory(app, handler):
             resp.content_type = 'application/octet-stream'
             return resp
         if isinstance(r, str):
-            if r.startwith('redirect:'):
+            if r.startswith('redirect:'):
                 return web.HTTPFound(r[9:])
             resp = web.Response(body=r.encode('utf-8'))
             resp.content_type = 'text/html;charset=utf-8'
@@ -137,13 +132,22 @@ def datetime_filter(t):
 
 
 async def init(loop):
+    # 创建数据库连接池
     await orm.create_pool(loop=loop, host='127.0.0.1', port=3306, user='root', password='root', db='awesome')
-    app = web.Application(loop=loop, middlewares=[logger_factory, auth_factory, response_factory])
+    # 初始化web
+    app = web.Application(loop=loop, middlewares=[
+        logger_factory,
+        auth_factory,
+        response_factory
+    ])
+    # 初始化模板引擎
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
     add_static(app)
-    server = await loop.create_server(app.make_handler(), '127.0.0.1', 8080)
-    logging.info('server started at http://127.0.0.1:8080')
+    host = '127.0.0.1'
+    port = 8080
+    server = await loop.create_server(app.make_handler(), host, port)
+    logging.info('server started at http://%s:%s' % (host, port))
     return server
 
 
