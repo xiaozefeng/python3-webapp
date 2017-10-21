@@ -187,10 +187,26 @@ async def api_register_user(*, email, name, passwd):
     return r
 
 
+@get('/manage/blogs')
+def manage_blog(*, page='1'):
+    return {'__template__': 'manage_blogs.html', 'page_index': get_page_index(page)}
+
+
 @get('/api/blogs/{id}')
 async def api_get_blog(*, id):
     blog = await Blog.find(id)
     return blog
+
+
+@get('/api/blogs')
+async def api_blogs(*, page='1'):
+    page_index = get_page_index(page)
+    num = await Blog.findNumber('count(id)')
+    p = Page(num, page_index)
+    if num == 0 :
+        return dict(page=p, blogs=())
+    blogs = await Blog.findAll(orderBy='created_at desc', limit=(p.offset, p.limit))
+    return dict(page=p, blogs=blogs)
 
 
 @post('/api/blogs')
