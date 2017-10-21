@@ -96,7 +96,7 @@ class RequestHandler(object):
         self._required_kw_args = get_required_kw_args(fn)
 
     async def __call__(self, request):
-        kw  = None
+        kw = None
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             if request.method == 'POST':
                 if not request.content_type:
@@ -116,7 +116,7 @@ class RequestHandler(object):
                 qs = request.query_string
                 if qs:
                     kw = dict()
-                    for k,v in parse.parse_qs(qs, True).items():
+                    for k, v in parse.parse_qs(qs, True).items():
                         kw[k] = v[0]
         if kw is None:
             kw = dict(**request.match_info)
